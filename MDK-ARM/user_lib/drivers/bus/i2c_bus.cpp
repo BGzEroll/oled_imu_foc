@@ -2,7 +2,8 @@
 
 extern I2C_HandleTypeDef hi2c1;
 
-class i2c_dev {
+class i2c_dev
+{
     public:
         i2c_dev(I2C_HandleTypeDef *i2c_handle)
             : i2c_handle(i2c_handle){}
