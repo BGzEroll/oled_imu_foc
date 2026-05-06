@@ -78,6 +78,7 @@ targets:
         - ../Drivers/CMSIS/Include
         - .cmsis/include
         - RTE/_project
+        - user_lib
       libList: []
     excludeList: []
     settings:

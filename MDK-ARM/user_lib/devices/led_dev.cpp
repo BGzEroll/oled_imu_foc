@@ -1,7 +1,7 @@
 #include "led_dev.h"
 
 led green_led(ONBORAD_GREEN_LED_GPIO_Port, ONBORAD_GREEN_LED_Pin, GPIO_PIN_RESET);
-led blue_led(ONBORAD_BULE_LED_GPIO_Port, ONBORAD_BULE_LED_Pin, GPIO_PIN_RESET);
+led blue_led(ONBORAD_BLUE_LED_GPIO_Port, ONBORAD_BLUE_LED_Pin, GPIO_PIN_RESET);
 
 /**
  * @brief 绿色 led 实例闪烁函数
