@@ -49,7 +49,6 @@ static void event_list(void)
 	static event green_led_task(50, green_led_proc);
 	green_led_task.start();
 
-	// static event blue_led_task(500, blue_led_proc);
 	static event blue_led_task(500, [](){blue_led.toggle();});
 	blue_led_task.start();
 }
