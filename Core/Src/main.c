@@ -128,8 +128,10 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  start_init_all();
   while (1)
   {
+    start_loop();
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

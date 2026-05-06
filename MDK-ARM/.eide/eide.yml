@@ -3,7 +3,8 @@ name: project
 type: ARM
 deviceName: STM32F407VETx
 packDir: .pack/Keil/STM32F4xx_DFP.2.14.0
-srcDirs: []
+srcDirs:
+  - user_lib
 virtualFolder:
   name: <virtual_root>
   files: []
@@ -79,7 +80,8 @@ targets:
         - RTE/_project
       libList: []
     excludeList: []
-    settings: {}
+    settings:
+      debugger: cortex-debug
     toolchain: AC6
     toolchainConfigMap:
       AC6:
