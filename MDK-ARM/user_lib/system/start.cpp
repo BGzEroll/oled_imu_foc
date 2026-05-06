@@ -1,6 +1,7 @@
 #include "system/event.h"
 #include "system/delay.h"
 #include "devices/led_dev.h"
+#include "devices/mpu6050_dev.h"
 
 #define DEBUG_TEST
 #ifdef DEBUG_TEST
@@ -10,28 +11,17 @@
 
 static void test_proc(uint32_t tick)
 {
-	static float phase = 0.0f;
-	static uint32_t cnt = 0;
-
-	phase += (float)tick * 0.01f;
-	if(phase >= 6.283185307f)
-	{
-		phase -= 6.283185307f;
-	}
-
-	int sin_x1000 = (int)(sinf(phase) * 1000.0f);
-	int cos_x1000 = (int)(cosf(phase) * 1000.0f);
-
-	static uint32_t check_tick_cnt[2] = {0};
-	check_tick_cnt[1] = check_tick_cnt[0];
-	check_tick_cnt[0] = delay::get_ms_tick();
-
-	SEGGER_RTT_printf(0, "%d,%d,%d,%d\n", cnt++, check_tick_cnt[0] - check_tick_cnt[1], sin_x1000, cos_x1000);
+	SEGGER_RTT_printf(0, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
+		(int)(mpu6050_dev.acc[0] * 1000), (int)(mpu6050_dev.acc[1] * 1000), (int)(mpu6050_dev.acc[2] * 1000),
+		(int)(mpu6050_dev.gyro[0] * 1000), (int)(mpu6050_dev.gyro[1] * 1000), (int)(mpu6050_dev.gyro[2] * 1000),
+		(int)(mpu6050_dev.angle[0] * 1000), (int)(mpu6050_dev.angle[1] * 1000), (int)(mpu6050_dev.angle[2] * 1000)
+	);
 }
 
 static void test_init(void)
 {
 	SEGGER_RTT_Init();
+	mpu6050_dev.init(1);
 }
 
 #endif
@@ -51,6 +41,9 @@ static void event_list(void)
 
 	static event blue_led_task(500, [](){blue_led.toggle();});
 	blue_led_task.start();
+
+	static event mpu6050_task(5, [](){mpu6050_dev.update();});
+	mpu6050_task.start();
 }
 
 /**

@@ -1,6 +1,7 @@
 #include "i2c_bus.h"
 
 extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c2;
 
 class i2c_dev
 {
@@ -69,7 +70,8 @@ class i2c_dev
 // 静态 i2c 设备表（资源池）
 static i2c_dev i2c_devs[] =
 {
-    i2c_dev(&hi2c1)
+    i2c_dev(&hi2c1),
+    i2c_dev(&hi2c2)
 };
 static constexpr uint8_t I2C_DEV_NUM = sizeof(i2c_devs) / sizeof(i2c_devs[0]);
 
