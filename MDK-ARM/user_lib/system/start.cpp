@@ -25,10 +25,10 @@ static void test_proc(uint32_t tick)
 		oled.flush();
 	}
 
-	SEGGER_RTT_printf(0, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
-		(int)(mpu6050_dev.acc[0] * 1000), (int)(mpu6050_dev.acc[1] * 1000), (int)(mpu6050_dev.acc[2] * 1000),
-		(int)(mpu6050_dev.gyro[0] * 1000), (int)(mpu6050_dev.gyro[1] * 1000), (int)(mpu6050_dev.gyro[2] * 1000),
-		(int)(mpu6050_dev.angle[0] * 1000), (int)(mpu6050_dev.angle[1] * 1000), (int)(mpu6050_dev.angle[2] * 1000)
+	SEGGER_RTT_printf(0, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
+		mpu6050_dev.acc[0], mpu6050_dev.acc[1], mpu6050_dev.acc[2],
+		mpu6050_dev.gyro[0], mpu6050_dev.gyro[1], mpu6050_dev.gyro[2],
+		mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
 	);
 }
 

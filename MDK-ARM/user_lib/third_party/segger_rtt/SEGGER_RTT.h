@@ -442,6 +442,7 @@ int     SEGGER_RTT_TerminalOut        (unsigned char TerminalId, const char* s);
 */
 int SEGGER_RTT_printf(unsigned BufferIndex, const char * sFormat, ...);
 int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pParamList);
+int SEGGER_RTT_PrintFloat(unsigned BufferIndex, float Value, unsigned Precision);
 
 #ifdef __cplusplus
   }

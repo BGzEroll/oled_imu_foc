@@ -68,6 +68,8 @@ Revision: $Rev: 17697 $
 
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdint.h>
+#include <math.h>
 
 
 #define FORMAT_FLAG_LEFT_JUSTIFY   (1u << 0)
@@ -298,6 +300,258 @@ static void _PrintInt(SEGGER_RTT_PRINTF_DESC * pBufferDesc, int v, unsigned Base
 
 /*********************************************************************
 *
+*       _Pow10U64
+*/
+static uint64_t _Pow10U64(unsigned Exp) {
+  uint64_t Value;
+
+  Value = 1u;
+  while (Exp != 0u) {
+    Value *= 10u;
+    Exp--;
+  }
+  return Value;
+}
+
+/*********************************************************************
+*
+*       _AppendUnsigned
+*/
+static unsigned _AppendUnsigned(char * pBuffer, uint64_t Value, unsigned MinDigits) {
+  char acTmp[24];
+  unsigned Cnt;
+  unsigned i;
+
+  Cnt = 0u;
+  do {
+    acTmp[Cnt++] = (char)('0' + (Value % 10u));
+    Value /= 10u;
+  } while (Value != 0u);
+
+  while (Cnt < MinDigits) {
+    acTmp[Cnt++] = '0';
+  }
+
+  for (i = 0u; i < Cnt; i++) {
+    pBuffer[i] = acTmp[Cnt - 1u - i];
+  }
+  return Cnt;
+}
+
+/*********************************************************************
+*
+*       _PrintFloat
+*
+*  Notes
+*    Precision is limited to 9 digits to keep the implementation
+*    compact and avoid oversized integer scaling on small targets.
+*/
+static void _PrintFloat(SEGGER_RTT_PRINTF_DESC * pBufferDesc, double Value, unsigned Precision, unsigned FieldWidth, unsigned FormatFlags) {
+  char acNum[48];
+  unsigned NumLen;
+  unsigned PadLen;
+  unsigned i;
+  char SignChar;
+
+  NumLen   = 0u;
+  SignChar = 0;
+
+  if (isnan(Value)) {
+    acNum[NumLen++] = 'n';
+    acNum[NumLen++] = 'a';
+    acNum[NumLen++] = 'n';
+  } else if (isinf(Value)) {
+    if (signbit(Value)) {
+      SignChar = '-';
+    } else if ((FormatFlags & FORMAT_FLAG_PRINT_SIGN) == FORMAT_FLAG_PRINT_SIGN) {
+      SignChar = '+';
+    }
+    acNum[NumLen++] = 'i';
+    acNum[NumLen++] = 'n';
+    acNum[NumLen++] = 'f';
+  } else {
+    uint64_t Scale;
+    uint64_t RoundedValue;
+    uint64_t IntegerPart;
+    uint64_t FractionPart;
+
+    if (Precision > 9u) {
+      Precision = 9u;
+    }
+
+    if (signbit(Value)) {
+      SignChar = '-';
+      Value = -Value;
+    } else if ((FormatFlags & FORMAT_FLAG_PRINT_SIGN) == FORMAT_FLAG_PRINT_SIGN) {
+      SignChar = '+';
+    }
+
+    Scale        = _Pow10U64(Precision);
+    RoundedValue = (uint64_t)(Value * (double)Scale + 0.5);
+    IntegerPart  = RoundedValue / Scale;
+    FractionPart = RoundedValue % Scale;
+
+    NumLen += _AppendUnsigned(acNum + NumLen, IntegerPart, 1u);
+
+    if ((Precision > 0u) || ((FormatFlags & FORMAT_FLAG_ALTERNATE) == FORMAT_FLAG_ALTERNATE)) {
+      acNum[NumLen++] = '.';
+      if (Precision > 0u) {
+        NumLen += _AppendUnsigned(acNum + NumLen, FractionPart, Precision);
+      }
+    }
+  }
+
+  PadLen = 0u;
+  if (FieldWidth > (NumLen + ((SignChar != 0) ? 1u : 0u))) {
+    PadLen = FieldWidth - NumLen - ((SignChar != 0) ? 1u : 0u);
+  }
+
+  if ((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) == 0u) {
+    if (((FormatFlags & FORMAT_FLAG_PAD_ZERO) == FORMAT_FLAG_PAD_ZERO) && (SignChar != 0)) {
+      _StoreChar(pBufferDesc, SignChar);
+      SignChar = 0;
+    }
+
+    for (i = 0u; i < PadLen; i++) {
+      _StoreChar(pBufferDesc, ((FormatFlags & FORMAT_FLAG_PAD_ZERO) == FORMAT_FLAG_PAD_ZERO) ? '0' : ' ');
+      if (pBufferDesc->ReturnValue < 0) {
+        return;
+      }
+    }
+  }
+
+  if (SignChar != 0) {
+    _StoreChar(pBufferDesc, SignChar);
+    if (pBufferDesc->ReturnValue < 0) {
+      return;
+    }
+  }
+
+  for (i = 0u; i < NumLen; i++) {
+    _StoreChar(pBufferDesc, acNum[i]);
+    if (pBufferDesc->ReturnValue < 0) {
+      return;
+    }
+  }
+
+  if ((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) == FORMAT_FLAG_LEFT_JUSTIFY) {
+    for (i = 0u; i < PadLen; i++) {
+      _StoreChar(pBufferDesc, ' ');
+      if (pBufferDesc->ReturnValue < 0) {
+        return;
+      }
+    }
+  }
+}
+
+/*********************************************************************
+*
+*       _PrintFloat32
+*
+*  Notes
+*    Dedicated single-precision variant for non-variadic RTT output.
+*    This avoids float -> double promotion at the public API boundary.
+*/
+static void _PrintFloat32(SEGGER_RTT_PRINTF_DESC * pBufferDesc, float Value, unsigned Precision, unsigned FieldWidth, unsigned FormatFlags) {
+  char acNum[48];
+  unsigned NumLen;
+  unsigned PadLen;
+  unsigned i;
+  char SignChar;
+
+  NumLen   = 0u;
+  SignChar = 0;
+
+  if (isnan(Value)) {
+    acNum[NumLen++] = 'n';
+    acNum[NumLen++] = 'a';
+    acNum[NumLen++] = 'n';
+  } else if (isinf(Value)) {
+    if (signbit(Value)) {
+      SignChar = '-';
+    } else if ((FormatFlags & FORMAT_FLAG_PRINT_SIGN) == FORMAT_FLAG_PRINT_SIGN) {
+      SignChar = '+';
+    }
+    acNum[NumLen++] = 'i';
+    acNum[NumLen++] = 'n';
+    acNum[NumLen++] = 'f';
+  } else {
+    uint64_t Scale;
+    uint64_t RoundedValue;
+    uint64_t IntegerPart;
+    uint64_t FractionPart;
+
+    if (Precision > 6u) {
+      Precision = 6u;
+    }
+
+    if (signbit(Value)) {
+      SignChar = '-';
+      Value = -Value;
+    } else if ((FormatFlags & FORMAT_FLAG_PRINT_SIGN) == FORMAT_FLAG_PRINT_SIGN) {
+      SignChar = '+';
+    }
+
+    Scale        = _Pow10U64(Precision);
+    RoundedValue = (uint64_t)(Value * (float)Scale + 0.5f);
+    IntegerPart  = RoundedValue / Scale;
+    FractionPart = RoundedValue % Scale;
+
+    NumLen += _AppendUnsigned(acNum + NumLen, IntegerPart, 1u);
+
+    if ((Precision > 0u) || ((FormatFlags & FORMAT_FLAG_ALTERNATE) == FORMAT_FLAG_ALTERNATE)) {
+      acNum[NumLen++] = '.';
+      if (Precision > 0u) {
+        NumLen += _AppendUnsigned(acNum + NumLen, FractionPart, Precision);
+      }
+    }
+  }
+
+  PadLen = 0u;
+  if (FieldWidth > (NumLen + ((SignChar != 0) ? 1u : 0u))) {
+    PadLen = FieldWidth - NumLen - ((SignChar != 0) ? 1u : 0u);
+  }
+
+  if ((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) == 0u) {
+    if (((FormatFlags & FORMAT_FLAG_PAD_ZERO) == FORMAT_FLAG_PAD_ZERO) && (SignChar != 0)) {
+      _StoreChar(pBufferDesc, SignChar);
+      SignChar = 0;
+    }
+
+    for (i = 0u; i < PadLen; i++) {
+      _StoreChar(pBufferDesc, ((FormatFlags & FORMAT_FLAG_PAD_ZERO) == FORMAT_FLAG_PAD_ZERO) ? '0' : ' ');
+      if (pBufferDesc->ReturnValue < 0) {
+        return;
+      }
+    }
+  }
+
+  if (SignChar != 0) {
+    _StoreChar(pBufferDesc, SignChar);
+    if (pBufferDesc->ReturnValue < 0) {
+      return;
+    }
+  }
+
+  for (i = 0u; i < NumLen; i++) {
+    _StoreChar(pBufferDesc, acNum[i]);
+    if (pBufferDesc->ReturnValue < 0) {
+      return;
+    }
+  }
+
+  if ((FormatFlags & FORMAT_FLAG_LEFT_JUSTIFY) == FORMAT_FLAG_LEFT_JUSTIFY) {
+    for (i = 0u; i < PadLen; i++) {
+      _StoreChar(pBufferDesc, ' ');
+      if (pBufferDesc->ReturnValue < 0) {
+        return;
+      }
+    }
+  }
+}
+
+/*********************************************************************
+*
 *       Public code
 *
 **********************************************************************
@@ -458,6 +712,18 @@ int SEGGER_RTT_vprintf(unsigned BufferIndex, const char * sFormat, va_list * pPa
       case '%':
         _StoreChar(&BufferDesc, '%');
         break;
+      // 添加输出浮点数的功能。默认保留 6 位小数，支持 %.nf。
+      case 'f':
+      case 'F': {
+        double fv;
+
+        fv = va_arg(*pParamList, double);
+        if (PrecisionSet == 0u) {
+          Precision = 6u;
+        }
+        _PrintFloat(&BufferDesc, fv, Precision, FieldWidth, FormatFlags);
+        break;
+      }
       default:
         break;
       }
@@ -518,5 +784,46 @@ int SEGGER_RTT_printf(unsigned BufferIndex, const char * sFormat, ...) {
   r = SEGGER_RTT_vprintf(BufferIndex, sFormat, &ParamList);
   va_end(ParamList);
   return r;
+}
+
+/*********************************************************************
+*
+*       SEGGER_RTT_PrintFloat
+*
+*  Function description
+*    Prints one float without using variadic arguments.
+*
+*  Parameters
+*    BufferIndex  Index of "Up"-buffer to be used.
+*    Value        Float value to print.
+*    Precision    Digits after decimal point. Limited to 6.
+*
+*  Return values
+*    >= 0:  Number of bytes which have been stored in the "Up"-buffer.
+*     < 0:  Error
+*/
+int SEGGER_RTT_PrintFloat(unsigned BufferIndex, float Value, unsigned Precision) {
+  SEGGER_RTT_PRINTF_DESC BufferDesc;
+  char acBuffer[SEGGER_RTT_PRINTF_BUFFER_SIZE];
+
+  BufferDesc.pBuffer        = acBuffer;
+  BufferDesc.BufferSize     = SEGGER_RTT_PRINTF_BUFFER_SIZE;
+  BufferDesc.Cnt            = 0u;
+  BufferDesc.RTTBufferIndex = BufferIndex;
+  BufferDesc.ReturnValue    = 0;
+
+  _PrintFloat32(&BufferDesc, Value, Precision, 0u, 0u);
+
+  if (BufferDesc.ReturnValue > 0) {
+    if (BufferDesc.Cnt != 0u) {
+      if (SEGGER_RTT_Write(BufferIndex, acBuffer, BufferDesc.Cnt) != BufferDesc.Cnt) {
+        BufferDesc.ReturnValue = -1;
+      } else {
+        BufferDesc.ReturnValue += (int)BufferDesc.Cnt;
+      }
+    }
+  }
+
+  return BufferDesc.ReturnValue;
 }
 /*************************** End of file ****************************/
