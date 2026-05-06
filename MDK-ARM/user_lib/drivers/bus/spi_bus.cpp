@@ -84,6 +84,29 @@ void spi_bus::init()
 }
 
 /**
+ * @brief spi 拉低 cs 电平
+ * 
+ * @param port cs 引脚端口
+ * @param pin cs 引脚编号
+ */
+void spi_bus::cs_low(GPIO_TypeDef *port, uint16_t pin)
+{
+    get_dev(bus_id)->cs_low(port, pin);
+}
+
+/**
+ * @brief spi 拉高 cs 电平
+ * 
+ * @param port cs 引脚端口
+ * @param pin cs 引脚编号
+ */
+void spi_bus::cs_high(GPIO_TypeDef *port, uint16_t pin)
+{
+    get_dev(bus_id)->cs_high(port, pin);
+}
+
+
+/**
  * @brief spi 发送数据
  * 
  * @param buf 数据缓冲区

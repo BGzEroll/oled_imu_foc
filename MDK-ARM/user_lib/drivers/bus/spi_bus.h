@@ -10,6 +10,8 @@ class spi_bus
 
     public:
         void init();
+        void cs_low(GPIO_TypeDef *port, uint16_t pin);
+        void cs_high(GPIO_TypeDef *port, uint16_t pin);
         void tx(const uint8_t *buf, uint32_t len);
         void rx(uint8_t *buf, uint32_t len);
         void tx_rx(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t len);
