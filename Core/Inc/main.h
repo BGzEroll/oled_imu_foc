@@ -31,8 +31,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-extern void start_init_all(void);
-extern void start_loop(void);
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

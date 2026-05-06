@@ -1,5 +1,9 @@
 #include "mpu6050.h"
 
+#include "system/delay.h"
+#include <math.h>
+#include <string.h>
+
 #define M_PI		    		    3.14159265358979323846
 
 #define DEG2RAD                     (M_PI / 180.0f)

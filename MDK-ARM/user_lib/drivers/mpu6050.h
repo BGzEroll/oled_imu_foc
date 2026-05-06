@@ -3,9 +3,6 @@
 
 #include "stm32f4xx_hal.h"
 #include "bus/i2c_bus.h"
-#include "system/delay.h"
-#include <math.h>
-#include <string.h>
 
 class mpu6050 {
     public:

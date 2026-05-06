@@ -2,7 +2,6 @@
 #define LED_DEV_H
 
 #include "drivers/led.h"
-#include "main.h"
 
 extern led green_led;
 extern led blue_led;

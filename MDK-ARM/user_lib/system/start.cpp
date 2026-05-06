@@ -2,6 +2,7 @@
 #include "system/delay.h"
 #include "devices/led_dev.h"
 #include "devices/mpu6050_dev.h"
+#include "devices/ssd1306_dev.h"
 
 #define DEBUG_TEST
 #ifdef DEBUG_TEST
@@ -11,6 +12,19 @@
 
 static void test_proc(uint32_t tick)
 {
+	static uint32_t oled_show_cnt = 0;
+	if((oled_show_cnt += tick) >= 20 && (oled_show_cnt = 0, 1))
+	{
+		oled.show_string(1, 1, "AX:");
+		oled.show_signed_num(1, 4, (int32_t)(mpu6050_dev.acc[0] * 1000), 4);
+		oled.show_string(2, 1, "AY:");
+		oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
+		oled.show_string(3, 1, "AZ:");
+		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
+		oled.show_string(4, 1, "UNIT:mg");
+		oled.flush();
+	}
+
 	SEGGER_RTT_printf(0, "%d,%d,%d,%d,%d,%d,%d,%d,%d\n",
 		(int)(mpu6050_dev.acc[0] * 1000), (int)(mpu6050_dev.acc[1] * 1000), (int)(mpu6050_dev.acc[2] * 1000),
 		(int)(mpu6050_dev.gyro[0] * 1000), (int)(mpu6050_dev.gyro[1] * 1000), (int)(mpu6050_dev.gyro[2] * 1000),
@@ -21,6 +35,7 @@ static void test_proc(uint32_t tick)
 static void test_init(void)
 {
 	SEGGER_RTT_Init();
+	oled.init();
 	mpu6050_dev.init(1);
 }
 
@@ -36,10 +51,10 @@ static void event_list(void)
 	test_task.start();
 #endif
 
-	static event green_led_task(50, green_led_proc);
+	static event green_led_task(1000, [](){green_led.toggle();});
 	green_led_task.start();
 
-	static event blue_led_task(500, [](){blue_led.toggle();});
+	static event blue_led_task(50, blue_led_proc);
 	blue_led_task.start();
 
 	static event mpu6050_task(1, [](){mpu6050_dev.update();});
@@ -49,7 +64,7 @@ static void event_list(void)
 /**
  * @brief 初始化所有模块
  */
-void start_init_all(void)
+extern "C" void start_init_all(void)
 {
 	delay::ms(1000);
 
@@ -63,7 +78,7 @@ void start_init_all(void)
 /**
  * @brief 调度器循环
  */
-void start_loop(void)
+extern "C" void start_loop(void)
 {
 	event::loop();
 }
