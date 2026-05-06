@@ -42,7 +42,7 @@ static void event_list(void)
 	static event blue_led_task(500, [](){blue_led.toggle();});
 	blue_led_task.start();
 
-	static event mpu6050_task(5, [](){mpu6050_dev.update();});
+	static event mpu6050_task(1, [](){mpu6050_dev.update();});
 	mpu6050_task.start();
 }
 

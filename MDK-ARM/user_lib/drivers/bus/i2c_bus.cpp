@@ -180,6 +180,8 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 {
     i2c_dev *p = nullptr;
     if(hi2c->Instance == I2C1){p = get_dev(0);}
+    else if(hi2c->Instance == I2C2){p = get_dev(1);}
+
     if(!p || !p->is_init){return;}
 
     p->dma_rx_busy = false;
@@ -192,6 +194,8 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
 {
     i2c_dev *p = nullptr;
     if(hi2c->Instance == I2C1){p = get_dev(0);}
+    else if(hi2c->Instance == I2C2){p = get_dev(1);}
+    
     if(!p || !p->is_init){return;}
 
     p->dma_rx_busy = false;

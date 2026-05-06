@@ -29,6 +29,7 @@ class mpu6050 {
     
     private:
         void get_raw();
+        bool dma_get_raw();
         void process_data();
         void write_cfg(uint8_t reg, uint8_t val);
         void get_gyro_offset();
@@ -38,6 +39,7 @@ class mpu6050 {
         float gyro_offset[3];
         uint32_t prev_Ts;
         float gyro_angle[3];
+        bool process_step = false;
 };
 
 #endif
