@@ -5,7 +5,8 @@
 /**
  * @brief 事件消息类型
  */
-enum class event_msg_type {
+enum class event_msg_type
+{
     timer = 0,
     async
 };
@@ -13,7 +14,8 @@ enum class event_msg_type {
 /**
  * @brief 事件队列节点
  */
-struct event_msg {
+struct event_msg
+{
     event_msg_type type;
     event *target;
     uint32_t id;
@@ -25,7 +27,7 @@ static void (*app_handler)(uint32_t, uint32_t) = nullptr;
 
 static event_msg queue[EVENT_QUEUE_SIZE];
 static volatile uint8_t q_read = 0, q_write = 0;
-static volatile uint8_t q_count = 0, q_drops = 0;
+static volatile uint32_t q_count = 0, q_drops = 0;
 
 /**
  * @brief 关闭中断并保存原中断状态

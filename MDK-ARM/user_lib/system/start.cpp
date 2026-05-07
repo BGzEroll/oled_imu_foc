@@ -3,6 +3,7 @@
 #include "devices/led_dev.h"
 #include "devices/mpu6050_dev.h"
 #include "devices/ssd1306_dev.h"
+#include "devices/motor.h"
 
 #define DEBUG_TEST
 #ifdef DEBUG_TEST
@@ -12,6 +13,8 @@
 
 static void test_proc(uint32_t tick)
 {
+	// motor_1.move(5.0f);
+
 	static uint32_t oled_show_cnt = 0;
 	if((oled_show_cnt += tick) >= 20 && (oled_show_cnt = 0, 1))
 	{
@@ -37,6 +40,7 @@ static void test_init(void)
 	SEGGER_RTT_Init();
 	oled.init();
 	mpu6050_dev.init(1);
+	// motor_init();
 }
 
 #endif
@@ -59,6 +63,9 @@ static void event_list(void)
 
 	static event mpu6050_task(1, [](){mpu6050_dev.update();});
 	mpu6050_task.start();
+
+	static event motor_task(1, motor_proc);
+	// motor_task.start();
 }
 
 /**
