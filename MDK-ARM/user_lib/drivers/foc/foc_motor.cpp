@@ -48,8 +48,6 @@ void foc_motor::init()
     {
         enable();
     }
-
-    HAL_TIM_Base_Start_IT(tim_handle);
 }
 
 /**

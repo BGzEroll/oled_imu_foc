@@ -22,6 +22,8 @@ void motor_init()
     motor_1.torque_type = foc_controller::torque_type::voltage;
     encoder_1.init();
 	motor_1.init();
+
+    HAL_TIM_Base_Start_IT(&htim1);
 }
 
 /**
