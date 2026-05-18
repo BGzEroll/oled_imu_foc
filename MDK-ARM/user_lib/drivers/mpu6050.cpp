@@ -56,9 +56,6 @@ void mpu6050::init(bool cail)
  */
 void mpu6050::update()
 {
-    // get_raw();
-    // process_data();
-
     if(process_step == true)
     {
         if(i2c.get_dma_status())
