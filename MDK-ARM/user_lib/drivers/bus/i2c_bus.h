@@ -10,9 +10,7 @@ class i2c_bus
 
     public:
         void init();
-        bool get_dma_status();
-        bool get_dma_error();
-        bool dma_read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len);
+        bool submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, void (*cb)(bool, void *), void *user_data = nullptr);
         bool read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len);
         void write_bytes(uint8_t addr, uint8_t reg, const uint8_t *buf, uint8_t len);
 

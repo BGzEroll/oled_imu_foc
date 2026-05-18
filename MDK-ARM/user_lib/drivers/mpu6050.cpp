@@ -56,24 +56,28 @@ void mpu6050::init(bool cail)
  */
 void mpu6050::update()
 {
-    if(process_step == true)
+    if(first_update)
     {
-        if(i2c.get_dma_status())
+        if(!i2c.submit_dma_read(addr, 0x3B, raw, 14,
+            [](bool ok, void *ctx){if(ok){((mpu6050 *)ctx)->process_step = true;}},
+            this))
         {
-            return;
+            process_step = true;        // 读取数据失败，重试
         }
-
-        process_step = false;
-
-        if(!i2c.get_dma_error())
-        {
-            process_data();
-        }
+        first_update = false;
+        return;
     }
 
-    if(dma_get_raw())
+    if(process_step == true)
     {
-        process_step = true;
+        process_data();
+        process_step = false;
+        if(!i2c.submit_dma_read(addr, 0x3B, raw, 14,
+            [](bool ok, void *ctx){if(ok){((mpu6050 *)ctx)->process_step = true;}},
+            this))
+        {
+            process_step = true;        // 处理数据失败，重试
+        }
     }
 }
 
@@ -83,14 +87,6 @@ void mpu6050::update()
 void mpu6050::get_raw()
 {
     i2c.read_bytes(addr, 0x3B, raw, 14);
-}
-
-/**
- * @brief dma 读取 MPU6050 原始数据
- */
-bool mpu6050::dma_get_raw()
-{
-    return i2c.dma_read_bytes(addr, 0x3B, raw, 14);
 }
 
 /**

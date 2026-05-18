@@ -28,25 +28,25 @@ void as5600::init()
  */
 void as5600::update()
 {
-    if(process_step == 1)
-    {
-        if(i2c.get_dma_status())
-        {
-            return;
-        }
+    // if(process_step == 1)
+    // {
+    //     if(i2c.get_dma_status())
+    //     {
+    //         return;
+    //     }
 
-        process_step = false;
+    //     process_step = false;
 
-        if(!i2c.get_dma_error())
-        {
-            process_data();
-        }
-    }
+    //     if(!i2c.get_dma_error())
+    //     {
+    //         process_data();
+    //     }
+    // }
 
-    if(dma_get_raw_data())
-    {
-        process_step = true;
-    }
+    // if(dma_get_raw_data())
+    // {
+    //     process_step = true;
+    // }
 }
 
 /**
@@ -97,7 +97,8 @@ float as5600::get_raw_velocity()
  */
 bool as5600::dma_get_raw_data()
 {
-    return i2c.dma_read_bytes(dev_addr, reg_addr, raw_data, 2);
+    // return i2c.dma_read_bytes(dev_addr, reg_addr, raw_data, 2);
+    return false;
 }
 
 /**

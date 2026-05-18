@@ -1,5 +1,7 @@
 #include "i2c_bus.h"
 
+#define QUEUE_SIZE      8
+
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
 
@@ -15,24 +17,23 @@ class i2c_dev
             if(is_init || !i2c_handle){return;}
             is_init = true;
         }
-
-        bool get_dma_status(){return dma_rx_busy;}
-        bool get_dma_error(){return dma_error;}
         
-        bool dma_read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len)
+        bool submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, void (*cb)(bool, void *) = nullptr, void *user_data = nullptr)
         {
             if(!i2c_handle || !buf || !len){return false;}
-            if(HAL_I2C_GetState(i2c_handle) != HAL_I2C_STATE_READY){return false;}
-            if(dma_rx_busy){return false;}
 
-            if(HAL_I2C_Mem_Read_DMA(i2c_handle, addr << 1, reg, I2C_MEMADD_SIZE_8BIT, buf, len) == HAL_OK)
+            dma_req req = {addr, reg, buf, len, cb, user_data};
+
+            __disable_irq();
+            bool ok = queue_push(req);
+            __enable_irq();
+            
+            if(ok && !dma_rx_busy)
             {
-                dma_rx_busy = true;
-                dma_error = false;
-                return true;
+                start_next_transfer();
             }
 
-            return false;
+            return ok;
         }
 
         bool read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len)
@@ -57,10 +58,83 @@ class i2c_dev
         }
 
     private:
+        struct dma_req
+        {
+            uint8_t addr;
+            uint8_t reg;
+            uint8_t *buf;
+            uint8_t len;
+            void (*cb)(bool, void *);
+            void *user_data;
+        };
+
+    private:
+        bool queue_empty() const
+        {
+            return queue_head == queue_tail;
+        }
+
+        bool queue_full() const
+        {
+            return (queue_tail + 1) % QUEUE_SIZE == queue_head;
+        }
+
+        bool queue_push(const dma_req &req)
+        {
+            if(queue_full()){return false;}
+            queue[queue_tail] = req;
+            queue_tail = (queue_tail + 1) % QUEUE_SIZE;
+            return true;
+        }
+
+        bool queue_pop(dma_req &req)
+        {
+            if(queue_empty()){return false;}
+            req = queue[queue_head];
+            queue_head = (queue_head + 1) % QUEUE_SIZE;
+            return true;
+        }
+
+        void start_next_transfer()
+        {
+            while(!queue_empty())
+            {
+                if(!queue_pop(current_req)){break;}
+
+                if(HAL_I2C_Mem_Read_DMA(i2c_handle, current_req.addr << 1, current_req.reg, I2C_MEMADD_SIZE_8BIT, current_req.buf, current_req.len) == HAL_OK)
+                {
+                    dma_rx_busy = true;
+                    return;
+                }
+
+                if(current_req.cb){current_req.cb(false, current_req.user_data);}
+            }
+
+            dma_rx_busy = false;
+        }
+
+        void on_dma_done()
+        {
+            dma_rx_busy = false;
+            if(current_req.cb){current_req.cb(true, current_req.user_data);}
+            start_next_transfer();
+        }
+
+        void on_dma_error()
+        {
+            dma_rx_busy = false;
+            if(current_req.cb){current_req.cb(false, current_req.user_data);}
+            start_next_transfer();
+        }
+
+    private:
         I2C_HandleTypeDef *i2c_handle;
         bool is_init = false;
         volatile bool dma_rx_busy = false;
-        volatile bool dma_error = false;
+        dma_req queue[QUEUE_SIZE];
+        volatile uint8_t queue_head = 0;
+        volatile uint8_t queue_tail = 0;
+        dma_req current_req;
 
     private:
         friend void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c);
@@ -107,41 +181,21 @@ void i2c_bus::init()
 }
 
 /**
- * @brief 获取 dma 状态
- * 
- * @return true dma 繁忙
- * @return false dma 空闲
- */
-bool i2c_bus::get_dma_status()
-{
-    return get_dev(bus_id)->get_dma_status();
-}
-
-/**
- * @brief 获取 dma 错误状态
- * 
- * @return true dma 错误
- * @return false dma 正常
- */
-bool i2c_bus::get_dma_error()
-{
-    return get_dev(bus_id)->get_dma_error();
-}
-
-/**
- * @brief dma 连续读取寄存器数据
+ * @brief 提交 dma 读取请求
  * 
  * @param addr 设备地址
  * @param reg  起始寄存器地址
  * @param buf  接收缓冲区
  * @param len  读取长度
+ * @param cb  完成回调函数
+ * @param user_data  用户数据指针
  * 
  * @return true 成功
  * @return false 失败
  */
-bool i2c_bus::dma_read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len)
+bool i2c_bus::submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, void (*cb)(bool, void *), void *user_data)
 {
-    return get_dev(bus_id)->dma_read_bytes(addr, reg, buf, len);
+    return get_dev(bus_id)->submit_dma_read(addr, reg, buf, len, cb, user_data);
 }
 
 /**
@@ -184,7 +238,7 @@ void HAL_I2C_MemRxCpltCallback(I2C_HandleTypeDef *hi2c)
 
     if(!p || !p->is_init){return;}
 
-    p->dma_rx_busy = false;
+    p->on_dma_done();
 }
 
 /**
@@ -198,6 +252,5 @@ void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
     
     if(!p || !p->is_init){return;}
 
-    p->dma_rx_busy = false;
-    p->dma_error = true;
+    p->on_dma_error();
 }
