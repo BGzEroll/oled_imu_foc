@@ -89,14 +89,6 @@ float as5600::get_raw_velocity()
 }
 
 /**
- * @brief 获取 as5600 原始数据
- */
-void as5600::get_raw_data()
-{
-    i2c.read_bytes(dev_addr, reg_addr, raw_data, 2);
-}
-
-/**
  * @brief 处理 as5600 数据
  */
 void as5600::process_data()

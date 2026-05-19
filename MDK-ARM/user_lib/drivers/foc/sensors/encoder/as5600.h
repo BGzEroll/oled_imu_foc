@@ -25,7 +25,6 @@ class as5600 : public sensors {
         float rad_velocity = 0.0f;
 
     private:
-        void get_raw_data();
         void process_data();
 
     private:
