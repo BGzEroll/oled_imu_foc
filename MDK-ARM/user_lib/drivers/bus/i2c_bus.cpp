@@ -22,7 +22,7 @@ class i2c_dev
             is_init = true;
         }
         
-        bool submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, volatile int8_t *dma_done)
+        bool submit_dma_read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, volatile int8_t *dma_done)
         {
             if(!i2c_handle || !buf || !len){return false;}
 
@@ -201,9 +201,9 @@ void i2c_bus::init()
  * @note 1 完成
  * @note -1 错误
  */
-bool i2c_bus::submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, volatile int8_t *dma_done)
+bool i2c_bus::submit_dma_read_bytes(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, volatile int8_t *dma_done)
 {
-    return get_dev(bus_id)->submit_dma_read(addr, reg, buf, len, dma_done);
+    return get_dev(bus_id)->submit_dma_read_bytes(addr, reg, buf, len, dma_done);
 }
 
 /**

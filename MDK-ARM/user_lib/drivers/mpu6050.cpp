@@ -58,21 +58,21 @@ void mpu6050::update()
 {
     if(first_update)
     {
-        if(!i2c.submit_dma_read(addr, 0x3B, raw, 14, &process_step))
+        if(!i2c.submit_dma_read_bytes(addr, 0x3B, raw, 14, &process_step))
         {
             return;     // 读取数据失败，重试
         }
         first_update = false;
     }
 
-    if(process_step == 1)
+    if(process_step == I2C_DMA_OK)
     {
         process_data();
-        i2c.submit_dma_read(addr, 0x3B, raw, 14, &process_step);
+        i2c.submit_dma_read_bytes(addr, 0x3B, raw, 14, &process_step);
     }
-    else if(process_step == -1)
+    else if(process_step == I2C_DMA_ERROR)
     {
-        i2c.submit_dma_read(addr, 0x3B, raw, 14, &process_step);     // 重试读取数据
+        i2c.submit_dma_read_bytes(addr, 0x3B, raw, 14, &process_step);     // 重试读取数据
     }
 }
 
