@@ -42,7 +42,6 @@ class ssd1306
         bool is_init = false;
         uint8_t fb[8][128];
         uint8_t dirty[8];
-        volatile int8_t flush_step = SPI_DMA_BUSY;
 };
 
 #endif

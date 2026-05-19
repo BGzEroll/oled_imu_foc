@@ -18,7 +18,7 @@ static uart_bus uart_0(0);
 
 static void test_proc(uint32_t tick)
 {
-	// motor_1.move(5.0f);
+	motor_1.move(5.0f);
 
 	static uint32_t oled_show_cnt = 0;
 	if((oled_show_cnt += tick) >= 20 && (oled_show_cnt = 0, 1))
@@ -31,8 +31,8 @@ static void test_proc(uint32_t tick)
 		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
 		oled.show_string(4, 1, "UNIT:mg");
 
-		oled.show_string(4, 1, "Encoder:");
-		oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
+		// oled.show_string(4, 1, "Encoder:");
+		// oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
 
 		oled.flush();
 	}
@@ -46,11 +46,7 @@ static void test_proc(uint32_t tick)
 
 static void test_init(void)
 {
-	SEGGER_RTT_Init();
 	uart_0.init();
-	oled.init();
-	mpu6050_dev.init(1);
-	motor_init();
 }
 
 #endif
@@ -74,8 +70,8 @@ static void event_list(void)
 	static event mpu6050_task(1, [](){mpu6050_dev.update();});
 	mpu6050_task.start();
 
-	static event motor_task(5, [](){motor_1.update();});
-	motor_task.start();
+	static event motor_task(1, [](){motor_1.update();});
+	// motor_task.start();
 }
 
 /**
@@ -88,6 +84,11 @@ extern "C" void start_init_all(void)
 #ifdef DEBUG_TEST
 	test_init();
 #endif
+
+	SEGGER_RTT_Init();
+	oled.init();
+	mpu6050_dev.init(1);
+	motor_init();
 	
 	event_list();
 }
