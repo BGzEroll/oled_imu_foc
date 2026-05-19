@@ -7,7 +7,7 @@ extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim8;
 
 static as5600 encoder_1(0, 0x36);
-foc_motor motor_1(&htim1, MOTOR_EN_GPIO_Port, MOTOR_EN_Pin, 7, 5.1f, 220.0f);
+foc_motor motor_1(&htim8, MOTOR_EN_GPIO_Port, MOTOR_EN_Pin, 7, 5.1f, 220.0f);
 
 /**
  * @brief 初始化电机
@@ -23,9 +23,6 @@ void motor_init()
     motor_1.torque_type = foc_controller::torque_type::voltage;
     encoder_1.init();
 	motor_1.init();
-    motor_1.enable();
-
-    HAL_TIM_Base_Start_IT(&htim2);
 }
 
 /**
@@ -33,7 +30,7 @@ void motor_init()
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if(htim->Instance == TIM2)
+    if(htim->Instance == TIM8)
     {
         motor_1.loop();
     }

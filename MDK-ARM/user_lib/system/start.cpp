@@ -13,17 +13,17 @@
 
 static void test_proc(uint32_t tick)
 {
-	// motor_1.move(5.0f);
+	motor_1.move(5.0f);
 
 	static uint32_t oled_show_cnt = 0;
 	if((oled_show_cnt += tick) >= 20 && (oled_show_cnt = 0, 1))
 	{
-		oled.show_string(1, 1, "AX:");
-		oled.show_signed_num(1, 4, (int32_t)(mpu6050_dev.acc[0] * 1000), 4);
-		oled.show_string(2, 1, "AY:");
-		oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
-		oled.show_string(3, 1, "AZ:");
-		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
+		// oled.show_string(1, 1, "AX:");
+		// oled.show_signed_num(1, 4, (int32_t)(mpu6050_dev.acc[0] * 1000), 4);
+		// oled.show_string(2, 1, "AY:");
+		// oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
+		// oled.show_string(3, 1, "AZ:");
+		// oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
 		// oled.show_string(4, 1, "UNIT:mg");
 
 		oled.show_string(4, 1, "Encoder:");
@@ -43,7 +43,7 @@ static void test_init(void)
 {
 	SEGGER_RTT_Init();
 	oled.init();
-	mpu6050_dev.init(1);
+	// mpu6050_dev.init(1);
 	motor_init();
 }
 
@@ -66,7 +66,7 @@ static void event_list(void)
 	blue_led_task.start();
 
 	static event mpu6050_task(1, [](){mpu6050_dev.update();});
-	mpu6050_task.start();
+	// mpu6050_task.start();
 
 	static event motor_task(1, [](){motor_1.update();});
 	motor_task.start();
