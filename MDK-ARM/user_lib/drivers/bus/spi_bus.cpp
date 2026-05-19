@@ -51,17 +51,23 @@ class spi_dev
             HAL_SPI_TransmitReceive(spi_handle, (uint8_t *)tx_buf, rx_buf, len, HAL_MAX_DELAY);
         }
 
-        bool submit_dma_tx(const uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
+                bool submit_dma_rx(uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
         {
             if(!spi_handle || !buf || !len){return false;}
 
-            dma_req req = {buf, nullptr, len, dma_done, dma_mode::DMA_MODE_TX};
+            dma_req req = {nullptr, buf, len, dma_done, dma_mode::DMA_MODE_RX};
+            bool need_start = false;
 
             __disable_irq();
             bool ok = queue_push(req);
+            if(ok && !dma_busy)
+            {
+                dma_busy = true;
+                need_start = true;
+            }
             __enable_irq();
 
-            if(ok && !dma_busy)
+            if(need_start)
             {
                 start_next_transfer();
             }
@@ -69,17 +75,23 @@ class spi_dev
             return ok;
         }
 
-        bool submit_dma_rx(uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
+        bool submit_dma_tx(const uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
         {
             if(!spi_handle || !buf || !len){return false;}
 
-            dma_req req = {nullptr, buf, len, dma_done, dma_mode::DMA_MODE_RX};
+            dma_req req = {buf, nullptr, len, dma_done, dma_mode::DMA_MODE_TX};
+            bool need_start = false;
 
             __disable_irq();
             bool ok = queue_push(req);
+            if(ok && !dma_busy)
+            {
+                dma_busy = true;
+                need_start = true;
+            }
             __enable_irq();
 
-            if(ok && !dma_busy)
+            if(need_start)
             {
                 start_next_transfer();
             }
@@ -92,12 +104,18 @@ class spi_dev
             if(!spi_handle || !tx_buf || !rx_buf || !len){return false;}
 
             dma_req req = {tx_buf, rx_buf, len, dma_done, dma_mode::DMA_MODE_RX_TX};
+            bool need_start = false;
 
             __disable_irq();
             bool ok = queue_push(req);
+            if(ok && !dma_busy)
+            {
+                dma_busy = true;
+                need_start = true;
+            }
             __enable_irq();
 
-            if(ok && !dma_busy)
+            if(need_start)
             {
                 start_next_transfer();
             }
@@ -151,46 +169,54 @@ class spi_dev
 
         void start_next_transfer()
         {
-            if(queue_pop(current_req))
+            dma_req req;
+
+            __disable_irq();
+            bool ok = queue_pop(req);
+            __enable_irq();
+
+            if(!ok)
             {
-                HAL_StatusTypeDef ret = HAL_ERROR;
-
-                if(current_req.mode == dma_mode::DMA_MODE_TX)
-                {
-                    ret = HAL_SPI_Transmit_DMA(spi_handle, (uint8_t *)current_req.tx_buf, current_req.len);
-                }
-                else if(current_req.mode == dma_mode::DMA_MODE_RX)
-                {
-                    ret = HAL_SPI_Receive_DMA(spi_handle, current_req.rx_buf, current_req.len);
-                }
-                else
-                {
-                    ret = HAL_SPI_TransmitReceive_DMA(spi_handle, (uint8_t *)current_req.tx_buf, current_req.rx_buf, current_req.len);
-                }
-
-                if(ret == HAL_OK)
-                {
-                    dma_busy = true;
-                    if(current_req.dma_done){*current_req.dma_done = SPI_DMA_BUSY;}
-                    return;
-                }
-
-                if(current_req.dma_done){*current_req.dma_done = SPI_DMA_ERROR;}
+                dma_busy = false;
+                return;
             }
+
+            current_req = req;
+            HAL_StatusTypeDef ret = HAL_ERROR;
+            switch(current_req.mode)
+            {
+                case dma_mode::DMA_MODE_RX:
+                    ret = HAL_SPI_Receive_DMA(spi_handle, current_req.rx_buf, current_req.len);
+                    break;
+
+                case dma_mode::DMA_MODE_TX:
+                    ret = HAL_SPI_Transmit_DMA(spi_handle, (uint8_t *)current_req.tx_buf, current_req.len);
+                    break;
+
+                case dma_mode::DMA_MODE_RX_TX:
+                    ret = HAL_SPI_TransmitReceive_DMA(spi_handle, (uint8_t *)current_req.tx_buf, current_req.rx_buf, current_req.len);
+                    break;
+            }
+
+            if(ret == HAL_OK)
+            {
+                if(current_req.dma_done){*current_req.dma_done = SPI_DMA_BUSY;}
+                return;
+            }
+
+            if(current_req.dma_done){*current_req.dma_done = SPI_DMA_ERROR;}
 
             dma_busy = false;
         }
 
         void on_dma_done()
         {
-            dma_busy = false;
             if(current_req.dma_done){*current_req.dma_done = SPI_DMA_OK;}
             start_next_transfer();
         }
 
         void on_dma_error()
         {
-            dma_busy = false;
             if(current_req.dma_done){*current_req.dma_done = SPI_DMA_ERROR;}
             start_next_transfer();
         }

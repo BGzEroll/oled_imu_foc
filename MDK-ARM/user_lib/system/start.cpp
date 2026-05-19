@@ -18,19 +18,18 @@ static uart_bus uart_0(0);
 
 static void test_proc(uint32_t tick)
 {
-	motor_1.move(5.0f);
-	motor_1.loop();
+	// motor_1.move(5.0f);
 
 	static uint32_t oled_show_cnt = 0;
 	if((oled_show_cnt += tick) >= 20 && (oled_show_cnt = 0, 1))
 	{
-		// oled.show_string(1, 1, "AX:");
-		// oled.show_signed_num(1, 4, (int32_t)(mpu6050_dev.acc[0] * 1000), 4);
-		// oled.show_string(2, 1, "AY:");
-		// oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
-		// oled.show_string(3, 1, "AZ:");
-		// oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
-		// oled.show_string(4, 1, "UNIT:mg");
+		oled.show_string(1, 1, "AX:");
+		oled.show_signed_num(1, 4, (int32_t)(mpu6050_dev.acc[0] * 1000), 4);
+		oled.show_string(2, 1, "AY:");
+		oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
+		oled.show_string(3, 1, "AZ:");
+		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
+		oled.show_string(4, 1, "UNIT:mg");
 
 		oled.show_string(4, 1, "Encoder:");
 		oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
@@ -43,13 +42,6 @@ static void test_proc(uint32_t tick)
 	// 	mpu6050_dev.gyro[0], mpu6050_dev.gyro[1], mpu6050_dev.gyro[2],
 	// 	mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
 	// );
-
-	// static uint32_t time[2] = {0};
-	// time[1] = time[0];
-	// time[0] = delay::get_us_tick();
-	
-	// SEGGER_RTT_printf(0, "%.3f\n", (float)(time[0] - time[1]) * 1.0e-6f);
-	// SEGGER_RTT_printf(0, "%.5f,%.5f\n", (float)(time[0] - time[1]) * 1.0e-6f, motor_1.sensor->get_angle());
 }
 
 static void test_init(void)
@@ -57,7 +49,7 @@ static void test_init(void)
 	SEGGER_RTT_Init();
 	uart_0.init();
 	oled.init();
-	// mpu6050_dev.init();
+	mpu6050_dev.init(1);
 	motor_init();
 }
 
@@ -80,9 +72,9 @@ static void event_list(void)
 	blue_led_task.start();
 
 	static event mpu6050_task(1, [](){mpu6050_dev.update();});
-	// mpu6050_task.start();
+	mpu6050_task.start();
 
-	static event motor_task(1, [](){motor_1.update();});
+	static event motor_task(5, [](){motor_1.update();});
 	motor_task.start();
 }
 

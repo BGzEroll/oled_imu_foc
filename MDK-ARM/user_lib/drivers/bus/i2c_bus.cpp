@@ -27,12 +27,18 @@ class i2c_dev
             if(!i2c_handle || !buf || !len){return false;}
 
             dma_req req = {addr, reg, buf, len, dma_done};
+            bool need_start = false;
 
             __disable_irq();
             bool ok = queue_push(req);
-            __enable_irq();
-            
             if(ok && !dma_rx_busy)
+            {
+                dma_rx_busy = true;
+                need_start = true;
+            }
+            __enable_irq();
+
+            if(need_start)
             {
                 start_next_transfer();
             }
@@ -100,31 +106,39 @@ class i2c_dev
 
         void start_next_transfer()
         {
-            if(queue_pop(current_req))
-            {
-                if(HAL_I2C_Mem_Read_DMA(i2c_handle, current_req.addr << 1, current_req.reg, I2C_MEMADD_SIZE_8BIT, current_req.buf, current_req.len) == HAL_OK)
-                {
-                    dma_rx_busy = true;
-                    if(current_req.dma_done){*current_req.dma_done = I2C_DMA_BUSY;}
-                    return;
-                }
+            dma_req req;
 
-                if(current_req.dma_done){*current_req.dma_done = I2C_DMA_ERROR;}
+            __disable_irq();
+            bool ok = queue_pop(req);
+            __enable_irq();
+
+            if(!ok)
+            {
+                dma_rx_busy = false;
+                return;
             }
+
+            current_req = req;
+
+            if(HAL_I2C_Mem_Read_DMA(i2c_handle, current_req.addr << 1, current_req.reg, I2C_MEMADD_SIZE_8BIT, current_req.buf, current_req.len) == HAL_OK)
+            {
+                if(current_req.dma_done){*current_req.dma_done = I2C_DMA_BUSY;}
+                return;
+            }
+
+            if(current_req.dma_done){*current_req.dma_done = I2C_DMA_ERROR;}
 
             dma_rx_busy = false;
         }
 
         void on_dma_done()
         {
-            dma_rx_busy = false;
             if(current_req.dma_done){*current_req.dma_done = I2C_DMA_OK;}
             start_next_transfer();
         }
 
         void on_dma_error()
         {
-            dma_rx_busy = false;
             if(current_req.dma_done){*current_req.dma_done = I2C_DMA_ERROR;}
             start_next_transfer();
         }

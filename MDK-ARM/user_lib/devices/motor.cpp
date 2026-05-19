@@ -31,6 +31,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if(htim->Instance == TIM8)
     {
-        // motor_1.loop();
+        motor_1.loop();
     }
 }
