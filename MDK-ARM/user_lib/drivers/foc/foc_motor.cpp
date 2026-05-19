@@ -49,9 +49,6 @@ void foc_motor::init()
         enable();
     }
 
-    sensor_direction = foc_controller::direction::CCW;
-    enable();
-
     __HAL_TIM_ENABLE_IT(tim_handle, TIM_IT_UPDATE);
 }
 

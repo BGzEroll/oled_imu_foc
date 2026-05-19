@@ -29,10 +29,10 @@ static void test_proc(uint32_t tick)
 		oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
 		oled.show_string(3, 1, "AZ:");
 		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
-		oled.show_string(4, 1, "UNIT:mg");
+		// oled.show_string(4, 1, "UNIT:mg");
 
-		// oled.show_string(4, 1, "Encoder:");
-		// oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
+		oled.show_string(4, 1, "Encoder:");
+		oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
 
 		oled.flush();
 	}
@@ -71,7 +71,7 @@ static void event_list(void)
 	mpu6050_task.start();
 
 	static event motor_task(1, [](){motor_1.update();});
-	// motor_task.start();
+	motor_task.start();
 }
 
 /**
