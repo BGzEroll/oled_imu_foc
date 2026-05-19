@@ -1,6 +1,6 @@
 #include "spi_bus.h"
 
-#define QUEUE_SIZE           8
+#define QUEUE_SIZE           16
 
 extern SPI_HandleTypeDef hspi1;
 
@@ -308,26 +308,6 @@ void spi_bus::rx_tx(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t len)
 }
 
 /**
- * @brief 提交 dma 发送请求
- *
- * @param buf 数据缓冲区
- * @param len 数据长度
- * @param dma_done 完成标志指针
- *
- * @return true 成功
- * @return false 失败
- * 
- * @note dma_done 有三种状态：
- * @note 0 未完成
- * @note 1 完成
- * @note -1 错误
- */
-bool spi_bus::submit_dma_tx(const uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
-{
-    return get_dev(bus_id)->submit_dma_tx(buf, len, dma_done);
-}
-
-/**
  * @brief 提交 dma 接收请求
  *
  * @param buf 接收缓冲区
@@ -345,6 +325,26 @@ bool spi_bus::submit_dma_tx(const uint8_t *buf, uint32_t len, volatile int8_t *d
 bool spi_bus::submit_dma_rx(uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
 {
     return get_dev(bus_id)->submit_dma_rx(buf, len, dma_done);
+}
+
+/**
+ * @brief 提交 dma 发送请求
+ *
+ * @param buf 数据缓冲区
+ * @param len 数据长度
+ * @param dma_done 完成标志指针
+ *
+ * @return true 成功
+ * @return false 失败
+ * 
+ * @note dma_done 有三种状态：
+ * @note 0 未完成
+ * @note 1 完成
+ * @note -1 错误
+ */
+bool spi_bus::submit_dma_tx(const uint8_t *buf, uint32_t len, volatile int8_t *dma_done)
+{
+    return get_dev(bus_id)->submit_dma_tx(buf, len, dma_done);
 }
 
 /**

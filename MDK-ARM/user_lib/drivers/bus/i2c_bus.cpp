@@ -1,6 +1,6 @@
 #include "i2c_bus.h"
 
-#define QUEUE_SIZE           8
+#define QUEUE_SIZE           16
 
 #define I2C_DMA_BUSY         0
 #define I2C_DMA_OK           1

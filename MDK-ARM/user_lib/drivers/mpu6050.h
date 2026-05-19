@@ -36,7 +36,7 @@ class mpu6050 {
         uint32_t prev_Ts;
         float gyro_angle[3];
         bool first_update = true;
-        volatile int8_t process_step = 0;
+        volatile int8_t process_step = I2C_DMA_BUSY;
 };
 
 #endif
