@@ -151,10 +151,8 @@ class spi_dev
 
         void start_next_transfer()
         {
-            while(!queue_empty())
+            if(queue_pop(current_req))
             {
-                if(!queue_pop(current_req)){break;}
-
                 HAL_StatusTypeDef ret = HAL_ERROR;
 
                 if(current_req.mode == dma_mode::DMA_MODE_TX)

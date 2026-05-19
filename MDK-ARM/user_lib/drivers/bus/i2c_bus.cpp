@@ -100,10 +100,8 @@ class i2c_dev
 
         void start_next_transfer()
         {
-            while(!queue_empty())
+            if(queue_pop(current_req))
             {
-                if(!queue_pop(current_req)){break;}
-
                 if(HAL_I2C_Mem_Read_DMA(i2c_handle, current_req.addr << 1, current_req.reg, I2C_MEMADD_SIZE_8BIT, current_req.buf, current_req.len) == HAL_OK)
                 {
                     dma_rx_busy = true;
