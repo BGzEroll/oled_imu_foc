@@ -25,17 +25,17 @@ class spi_dev
             HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET);
         }
 
-        void tx(const uint8_t *buf, uint32_t len)
-        {
-            HAL_SPI_Transmit(spi_handle, buf, len, HAL_MAX_DELAY);
-        }
-
         void rx(uint8_t *buf, uint32_t len)
         {
             HAL_SPI_Receive(spi_handle, buf, len, HAL_MAX_DELAY);
         }
 
-        void tx_rx(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t len)
+        void tx(const uint8_t *buf, uint32_t len)
+        {
+            HAL_SPI_Transmit(spi_handle, buf, len, HAL_MAX_DELAY);
+        }
+
+        void rx_tx(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t len)
         {
             HAL_SPI_TransmitReceive(spi_handle, tx_buf, rx_buf, len, HAL_MAX_DELAY);
         }
@@ -105,6 +105,16 @@ void spi_bus::cs_high(GPIO_TypeDef *port, uint16_t pin)
     get_dev(bus_id)->cs_high(port, pin);
 }
 
+/**
+ * @brief spi 接收数据
+ * 
+ * @param buf 接收缓冲区
+ * @param len 接收长度
+ */
+void spi_bus::rx(uint8_t *buf, uint32_t len)
+{
+    get_dev(bus_id)->rx(buf, len);
+}
 
 /**
  * @brief spi 发送数据
@@ -118,24 +128,13 @@ void spi_bus::tx(const uint8_t *buf, uint32_t len)
 }
 
 /**
- * @brief spi 接收数据
- * 
- * @param buf 接收缓冲区
- * @param len 接收长度
- */
-void spi_bus::rx(uint8_t *buf, uint32_t len)
-{
-    get_dev(bus_id)->rx(buf, len);
-}
-
-/**
  * @brief spi 发送接收数据
  * 
  * @param tx_buf 发送缓冲区
  * @param rx_buf 接收缓冲区
  * @param len 数据长度
  */
-void spi_bus::tx_rx(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t len)
+void spi_bus::rx_tx(const uint8_t *tx_buf, uint8_t *rx_buf, uint32_t len)
 {
-    get_dev(bus_id)->tx_rx(tx_buf, rx_buf, len);
+    get_dev(bus_id)->rx_tx(tx_buf, rx_buf, len);
 }
