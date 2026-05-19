@@ -7,6 +7,5 @@
 extern foc_motor motor_1;
 
 void motor_init();
-void motor_proc();
 
 #endif

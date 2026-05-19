@@ -24,15 +24,19 @@ static void test_proc(uint32_t tick)
 		oled.show_signed_num(2, 4, (int32_t)(mpu6050_dev.acc[1] * 1000), 4);
 		oled.show_string(3, 1, "AZ:");
 		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
-		oled.show_string(4, 1, "UNIT:mg");
+		// oled.show_string(4, 1, "UNIT:mg");
+
+		oled.show_string(4, 1, "Encoder:");
+		oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
+
 		oled.flush();
 	}
 
-	SEGGER_RTT_printf(0, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
-		mpu6050_dev.acc[0], mpu6050_dev.acc[1], mpu6050_dev.acc[2],
-		mpu6050_dev.gyro[0], mpu6050_dev.gyro[1], mpu6050_dev.gyro[2],
-		mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
-	);
+	// SEGGER_RTT_printf(0, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
+	// 	mpu6050_dev.acc[0], mpu6050_dev.acc[1], mpu6050_dev.acc[2],
+	// 	mpu6050_dev.gyro[0], mpu6050_dev.gyro[1], mpu6050_dev.gyro[2],
+	// 	mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
+	// );
 }
 
 static void test_init(void)
@@ -40,7 +44,7 @@ static void test_init(void)
 	SEGGER_RTT_Init();
 	oled.init();
 	mpu6050_dev.init(1);
-	// motor_init();
+	motor_init();
 }
 
 #endif
@@ -64,8 +68,8 @@ static void event_list(void)
 	static event mpu6050_task(1, [](){mpu6050_dev.update();});
 	mpu6050_task.start();
 
-	static event motor_task(1, motor_proc);
-	// motor_task.start();
+	static event motor_task(1, [](){motor_1.update();});
+	motor_task.start();
 }
 
 /**

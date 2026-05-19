@@ -25,7 +25,6 @@ class as5600 : public sensors {
         float rad_velocity = 0.0f;
 
     private:
-        bool dma_get_raw_data();
         void get_raw_data();
         void process_data();
 
@@ -41,7 +40,8 @@ class as5600 : public sensors {
         uint16_t prev_count = 0;
         int32_t total_count = 0;
         uint32_t prev_Ts = 0;
-        bool process_step = false;
+        bool first_update = true;
+        volatile int8_t process_step = I2C_DMA_BUSY;
 };
 
 #endif

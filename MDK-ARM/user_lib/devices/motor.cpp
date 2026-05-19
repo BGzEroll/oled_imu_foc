@@ -3,6 +3,7 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim1;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim8;
 
 static as5600 encoder_1(0, 0x36);
@@ -22,16 +23,9 @@ void motor_init()
     motor_1.torque_type = foc_controller::torque_type::voltage;
     encoder_1.init();
 	motor_1.init();
+    motor_1.enable();
 
-    HAL_TIM_Base_Start_IT(&htim1);
-}
-
-/**
- * @brief 电机进程函数
- */
-void motor_proc()
-{
-    motor_1.update();
+    HAL_TIM_Base_Start_IT(&htim2);
 }
 
 /**
@@ -39,7 +33,7 @@ void motor_proc()
  */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-    if(htim->Instance == TIM1)
+    if(htim->Instance == TIM2)
     {
         motor_1.loop();
     }

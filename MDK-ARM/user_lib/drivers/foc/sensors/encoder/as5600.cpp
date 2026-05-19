@@ -28,25 +28,24 @@ void as5600::init()
  */
 void as5600::update()
 {
-    // if(process_step == 1)
-    // {
-    //     if(i2c.get_dma_status())
-    //     {
-    //         return;
-    //     }
+    if(first_update)
+    {
+        if(!i2c.submit_dma_read_bytes(dev_addr, reg_addr, raw_data, 2, &process_step))
+        {
+            return;     // 读取数据失败，重试
+        }
+        first_update = false;
+    }
 
-    //     process_step = false;
-
-    //     if(!i2c.get_dma_error())
-    //     {
-    //         process_data();
-    //     }
-    // }
-
-    // if(dma_get_raw_data())
-    // {
-    //     process_step = true;
-    // }
+    if(process_step == I2C_DMA_OK)
+    {
+        process_data();
+        i2c.submit_dma_read_bytes(dev_addr, reg_addr, raw_data, 2, &process_step);
+    }
+    else if(process_step == I2C_DMA_ERROR)
+    {
+        i2c.submit_dma_read_bytes(dev_addr, reg_addr, raw_data, 2, &process_step);     // 重试读取数据
+    }
 }
 
 /**
@@ -87,18 +86,6 @@ float as5600::get_raw_full_angle()
 float as5600::get_raw_velocity()
 {
     return rad_velocity;
-}
-
-/**
- * @brief dma 获取 as5600 原始数据
- * 
- * @return true 成功
- * @return false 失败
- */
-bool as5600::dma_get_raw_data()
-{
-    // return i2c.dma_read_bytes(dev_addr, reg_addr, raw_data, 2);
-    return false;
 }
 
 /**
