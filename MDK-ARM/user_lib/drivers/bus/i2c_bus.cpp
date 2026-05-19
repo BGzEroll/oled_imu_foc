@@ -1,6 +1,10 @@
 #include "i2c_bus.h"
 
-#define QUEUE_SIZE      8
+#define QUEUE_SIZE           8
+
+#define I2C_DMA_BUSY         0
+#define I2C_DMA_OK           1
+#define I2C_DMA_ERROR       -1
 
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
@@ -18,11 +22,11 @@ class i2c_dev
             is_init = true;
         }
         
-        bool submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, void (*cb)(bool, void *) = nullptr, void *user_data = nullptr)
+        bool submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, volatile int8_t *dma_done)
         {
             if(!i2c_handle || !buf || !len){return false;}
 
-            dma_req req = {addr, reg, buf, len, cb, user_data};
+            dma_req req = {addr, reg, buf, len, dma_done};
 
             __disable_irq();
             bool ok = queue_push(req);
@@ -64,8 +68,7 @@ class i2c_dev
             uint8_t reg;
             uint8_t *buf;
             uint8_t len;
-            void (*cb)(bool, void *);
-            void *user_data;
+            volatile int8_t *dma_done;
         };
 
     private:
@@ -104,10 +107,11 @@ class i2c_dev
                 if(HAL_I2C_Mem_Read_DMA(i2c_handle, current_req.addr << 1, current_req.reg, I2C_MEMADD_SIZE_8BIT, current_req.buf, current_req.len) == HAL_OK)
                 {
                     dma_rx_busy = true;
+                    if(current_req.dma_done){*current_req.dma_done = I2C_DMA_BUSY;}
                     return;
                 }
 
-                if(current_req.cb){current_req.cb(false, current_req.user_data);}
+                if(current_req.dma_done){*current_req.dma_done = I2C_DMA_ERROR;}
             }
 
             dma_rx_busy = false;
@@ -116,14 +120,14 @@ class i2c_dev
         void on_dma_done()
         {
             dma_rx_busy = false;
-            if(current_req.cb){current_req.cb(true, current_req.user_data);}
+            if(current_req.dma_done){*current_req.dma_done = I2C_DMA_OK;}
             start_next_transfer();
         }
 
         void on_dma_error()
         {
             dma_rx_busy = false;
-            if(current_req.cb){current_req.cb(false, current_req.user_data);}
+            if(current_req.dma_done){*current_req.dma_done = I2C_DMA_ERROR;}
             start_next_transfer();
         }
 
@@ -187,15 +191,19 @@ void i2c_bus::init()
  * @param reg  起始寄存器地址
  * @param buf  接收缓冲区
  * @param len  读取长度
- * @param cb  完成回调函数
- * @param user_data  用户数据指针
+ * @param dma_done  是否成功完成指针
  * 
  * @return true 成功
  * @return false 失败
+ * 
+ * @note dma_done 有三种状态：
+ * @note 0 未完成
+ * @note 1 完成
+ * @note -1 错误
  */
-bool i2c_bus::submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, void (*cb)(bool, void *), void *user_data)
+bool i2c_bus::submit_dma_read(uint8_t addr, uint8_t reg, uint8_t *buf, uint8_t len, volatile int8_t *dma_done)
 {
-    return get_dev(bus_id)->submit_dma_read(addr, reg, buf, len, cb, user_data);
+    return get_dev(bus_id)->submit_dma_read(addr, reg, buf, len, dma_done);
 }
 
 /**

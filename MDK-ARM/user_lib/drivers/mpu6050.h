@@ -32,11 +32,11 @@ class mpu6050 {
 
     private:
         uint8_t raw[14];
-        float gyro_offset[3];
+        float gyro_offset[3] = {0.0f};
         uint32_t prev_Ts;
         float gyro_angle[3];
         bool first_update = true;
-        volatile bool process_step = false;
+        volatile int8_t process_step = 0;
 };
 
 #endif
