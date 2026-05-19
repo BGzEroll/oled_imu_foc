@@ -3,7 +3,6 @@
 #include "main.h"
 
 extern TIM_HandleTypeDef htim1;
-extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim8;
 
 static as5600 encoder_1(0, 0x36);
@@ -32,6 +31,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     if(htim->Instance == TIM8)
     {
-        motor_1.loop();
+        // motor_1.loop();
     }
 }

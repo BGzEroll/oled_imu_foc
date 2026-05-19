@@ -409,24 +409,26 @@ void ssd1306::flush()
         cmds[2] = 0x10;
         write_commands(cmds, sizeof(cmds));
 
-        spi.cs_low(cs_port, cs_pin);
+        // spi.cs_low(cs_port, cs_pin);
 
-        flush_step = SPI_DMA_BUSY;
-        if(!spi.submit_dma_tx(fb[page], SSD1306_PAGE_WIDTH, &flush_step))
-        {
-            spi.cs_high(cs_port, cs_pin);
-            page--;
-            continue;
-        }
+        // flush_step = SPI_DMA_BUSY;
+        // if(!spi.submit_dma_tx(fb[page], SSD1306_PAGE_WIDTH, &flush_step))
+        // {
+        //     spi.cs_high(cs_port, cs_pin);
+        //     page--;
+        //     continue;
+        // }
 
-        while(flush_step == SPI_DMA_BUSY);
-        spi.cs_high(cs_port, cs_pin);
+        // while(flush_step == SPI_DMA_BUSY);
+        // spi.cs_high(cs_port, cs_pin);
 
-        if(flush_step == SPI_DMA_ERROR)
-        {
-            page--;
-            continue;
-        }
+        // if(flush_step == SPI_DMA_ERROR)
+        // {
+        //     page--;
+        //     continue;
+        // }
+
+        write_data(fb[page], SSD1306_PAGE_WIDTH);
 
         dirty[page] = 0;
     }

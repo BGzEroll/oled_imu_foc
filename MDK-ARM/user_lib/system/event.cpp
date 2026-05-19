@@ -1,6 +1,9 @@
 #include "event.h"
 
-#define GET_MS_TICK     HAL_GetTick
+#define GET_MS_TICK                     HAL_GetTick
+
+#define EVENT_QUEUE_SIZE                16
+#define EVENT_DISPATCH_MAX_PER_LOOP     8
 
 /**
  * @brief 事件消息类型
@@ -44,7 +47,7 @@ static uint32_t lock_irq()
  */
 static void unlock_irq(uint32_t primask)
 {
-    if((primask & 1U) == 0U)
+    if((primask & 1) == 0)
     {
         __enable_irq();
     }

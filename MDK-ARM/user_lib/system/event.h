@@ -3,9 +3,6 @@
 
 #include "stm32f4xx_hal.h"
 
-#define EVENT_QUEUE_SIZE                16
-#define EVENT_DISPATCH_MAX_PER_LOOP     8
-
 class event
 {
     public:

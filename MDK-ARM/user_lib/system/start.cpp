@@ -9,11 +9,17 @@
 #ifdef DEBUG_TEST
 
 #include <math.h>
+#include <string.h>
+#include <stdio.h>
+#include "drivers/bus/uart_bus.h"
 #include "third_party/segger_rtt/SEGGER_RTT.h"
+
+static uart_bus uart_0(0);
 
 static void test_proc(uint32_t tick)
 {
 	motor_1.move(5.0f);
+	motor_1.loop();
 
 	static uint32_t oled_show_cnt = 0;
 	if((oled_show_cnt += tick) >= 20 && (oled_show_cnt = 0, 1))
@@ -37,13 +43,21 @@ static void test_proc(uint32_t tick)
 	// 	mpu6050_dev.gyro[0], mpu6050_dev.gyro[1], mpu6050_dev.gyro[2],
 	// 	mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
 	// );
+
+	// static uint32_t time[2] = {0};
+	// time[1] = time[0];
+	// time[0] = delay::get_us_tick();
+	
+	// SEGGER_RTT_printf(0, "%.3f\n", (float)(time[0] - time[1]) * 1.0e-6f);
+	// SEGGER_RTT_printf(0, "%.5f,%.5f\n", (float)(time[0] - time[1]) * 1.0e-6f, motor_1.sensor->get_angle());
 }
 
 static void test_init(void)
 {
 	SEGGER_RTT_Init();
+	uart_0.init();
 	oled.init();
-	// mpu6050_dev.init(1);
+	// mpu6050_dev.init();
 	motor_init();
 }
 
