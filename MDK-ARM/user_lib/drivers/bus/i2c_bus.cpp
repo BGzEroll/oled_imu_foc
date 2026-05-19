@@ -2,10 +2,6 @@
 
 #define QUEUE_SIZE           16
 
-#define I2C_DMA_BUSY         0
-#define I2C_DMA_OK           1
-#define I2C_DMA_ERROR       -1
-
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c2;
 
