@@ -59,11 +59,11 @@ void foc_controller::move(type controller_type, float target)
  */
 void foc_controller::torque(float torque)
 {
-    if(!motor->sensor){return;}
+    if(!motor->encoder_sensor){return;}
     if(motor->sensor_direction == direction::UNKNOWN){return;}
 
-    shaft_angle = (float)motor->sensor_direction * motor->sensor->get_full_angle();
-    shaft_velocity = (float)motor->sensor_direction * motor->sensor->get_velocity();
+    shaft_angle = (float)motor->sensor_direction * motor->encoder_sensor->get_full_angle();
+    shaft_velocity = (float)motor->sensor_direction * motor->encoder_sensor->get_velocity();
 
     if(!is_enable){return;}
 
@@ -92,7 +92,7 @@ void foc_controller::torque(float torque)
         // current_sp = torque;
     }
 
-    e_angle = foc_utils::normalize_angle((float)motor->sensor_direction * motor->PP * motor->sensor->get_angle() - motor->zero_electric_angle);
+    e_angle = foc_utils::normalize_angle((float)motor->sensor_direction * motor->PP * motor->encoder_sensor->get_angle() - motor->zero_electric_angle);
 
     switch(motor->torque_type)
     {
@@ -130,11 +130,11 @@ void foc_controller::velocity(float velocity)
  */
 void foc_controller::angle(float angle)
 {
-    if(!motor->sensor){return;}
+    if(!motor->encoder_sensor){return;}
     if(motor->sensor_direction == direction::UNKNOWN){return;}
 
-    shaft_angle = (float)motor->sensor_direction * motor->sensor->get_full_angle();
-    shaft_velocity = (float)motor->sensor_direction * motor->sensor->get_velocity();
+    shaft_angle = (float)motor->sensor_direction * motor->encoder_sensor->get_full_angle();
+    shaft_velocity = (float)motor->sensor_direction * motor->encoder_sensor->get_velocity();
 
     if(!is_enable){return;}
 

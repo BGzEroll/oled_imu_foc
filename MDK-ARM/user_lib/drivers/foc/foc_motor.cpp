@@ -82,9 +82,19 @@ void foc_motor::disable()
  * 
  * @param sensor 传感器指针
  */
-void foc_motor::link_sensor(sensors *sensor)
+void foc_motor::link_encoder_sensor(encoder_sensors *encoder_sensor)
 {
-    this->sensor = sensor;
+    this->encoder_sensor = encoder_sensor;
+}
+
+/**
+ * @brief 链接电流传感器
+ * 
+ * @param current_sensor 电流传感器指针
+ */
+void foc_motor::link_current_sensor(current_sensors *current_sensor)
+{
+    this->current_sensor = current_sensor;
 }
 
 /**
@@ -92,7 +102,7 @@ void foc_motor::link_sensor(sensors *sensor)
  */
 void foc_motor::update()
 {
-    if(sensor){sensor->update();}
+    if(encoder_sensor){encoder_sensor->update();}
 }
 
 /**
@@ -122,7 +132,7 @@ void foc_motor::move(float target)
  */
 bool foc_motor::align()
 {
-    if(!sensor){return false;}
+    if(!encoder_sensor){return false;}
 
     enable();
 
@@ -139,10 +149,10 @@ bool foc_motor::align()
 
     for(uint32_t i = 0; i < 100; i++)
     {
-        sensor->update();
+        encoder_sensor->update();
         foc_utils::delay_ms(1);
     }
-    float mid_angle = sensor->get_full_angle();
+    float mid_angle = encoder_sensor->get_full_angle();
 
     // 反转
     for(int32_t i = 500; i >= 0; i--)
@@ -155,10 +165,10 @@ bool foc_motor::align()
 
     for(uint32_t i = 0; i < 100; i++)
     {
-        sensor->update();
+        encoder_sensor->update();
         foc_utils::delay_ms(1);
     }
-    float end_angle = sensor->get_full_angle();
+    float end_angle = encoder_sensor->get_full_angle();
 
     // 测试方向
     float moved = fabsf(mid_angle - end_angle);
@@ -172,11 +182,11 @@ bool foc_motor::align()
     foc_utils::delay_ms(700);
     for(uint32_t i = 0; i < 100; i++)
     {
-        sensor->update();
+        encoder_sensor->update();
         foc_utils::delay_ms(1);
     }
     zero_electric_angle = foc_utils::normalize_angle(
-        foc_utils::electrical_angle((float)sensor_direction * sensor->get_full_angle(), PP));
+        foc_utils::electrical_angle((float)sensor_direction * encoder_sensor->get_full_angle(), PP));
     foc_utils::delay_ms(20);
 
     set_dq_voltage(voltage_sensor_align, 0.0f, _3PI_2);

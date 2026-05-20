@@ -5,7 +5,7 @@
  * 
  * @return 角度值，单位：弧度，范围：[0, 2π)
  */
-float sensors::get_angle()
+float encoder_sensors::get_angle()
 {
     return get_raw_angle();
 }
@@ -15,7 +15,7 @@ float sensors::get_angle()
  * 
  * @return 累加角度值，单位：弧度
  */
-float sensors::get_full_angle()
+float encoder_sensors::get_full_angle()
 {
     return get_raw_full_angle();
 }
@@ -25,7 +25,7 @@ float sensors::get_full_angle()
  * 
  * @return 速度值，单位：弧度/秒
  */
-float sensors::get_velocity()
+float encoder_sensors::get_velocity()
 {
     uint32_t id = get_sample_id();
     if(id != sample_id)

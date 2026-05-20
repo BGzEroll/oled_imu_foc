@@ -5,7 +5,7 @@
 #include "drivers/bus/i2c_bus.h"
 #include "../sensors.h"
 
-class as5600 : public sensors {
+class as5600 : public encoder_sensors {
     public:
         as5600(uint8_t i2c_bus_id, uint8_t dev_addr);
 

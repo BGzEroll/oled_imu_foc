@@ -4,7 +4,7 @@
 #include "stm32f4xx_hal.h"
 #include "../algorithm/lowpass_filter.h"
 
-class sensors
+class encoder_sensors
 {
     public:
         virtual void update() = 0;
@@ -30,5 +30,15 @@ class sensors
         virtual float get_raw_full_angle() = 0;
         virtual float get_raw_velocity() = 0;
 };
+
+class current_sensors
+{
+    public:
+        virtual void update() = 0;
+        virtual float get_current();
+
+    protected:
+        virtual float get_raw_current() = 0;
+}
 
 #endif

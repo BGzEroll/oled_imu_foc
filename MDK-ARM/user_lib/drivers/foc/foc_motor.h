@@ -3,8 +3,7 @@
 
 #include "stm32f4xx_hal.h"
 #include "foc_controller.h"
-
-class sensors;
+#include "sensors/sensors.h"
 
 class foc_motor
 {
@@ -18,7 +17,8 @@ class foc_motor
         void init();
         void enable();
         void disable();
-        void link_sensor(sensors *sensor);
+        void link_encoder_sensor(encoder_sensors *encoder_sensor);
+        void link_current_sensor(current_sensors *current_sensor);
 
     public:
         void update();
@@ -37,7 +37,8 @@ class foc_motor
         float voltage_sensor_align = 0.0f;
 
     public:
-        sensors *sensor = nullptr;
+        encoder_sensors *encoder_sensor = nullptr;
+        current_sensors *current_sensor = nullptr;
 
     private:
         TIM_HandleTypeDef *tim_handle;
