@@ -34,11 +34,14 @@ class encoder_sensors
 class current_sensors
 {
     public:
+        virtual void get_offset() = 0;
         virtual void update() = 0;
-        virtual float get_current();
+        virtual void get_current(float *i_a, float *i_b, float *i_c);
+        virtual void get_voltage(float *v_a, float *v_b, float *v_c);
 
     protected:
-        virtual float get_raw_current() = 0;
-}
+        virtual float *get_raw_current() = 0;
+        virtual float *get_raw_voltage() = 0;
+};
 
 #endif

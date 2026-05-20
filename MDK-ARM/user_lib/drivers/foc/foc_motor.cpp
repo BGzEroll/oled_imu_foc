@@ -51,6 +51,8 @@ void foc_motor::init()
     }
 
     __HAL_TIM_ENABLE_IT(tim_handle, TIM_IT_UPDATE);
+
+    if(current_sensor){current_sensor->get_offset();}
 }
 
 /**
@@ -58,8 +60,6 @@ void foc_motor::init()
  */
 void foc_motor::enable()
 {
-    set_dq_voltage(0.0f, 0.0f, 0.0f);
-    set_phase_voltage();
     if(!en_gpio || !en_pin){return;}
     HAL_GPIO_WritePin(en_gpio, en_pin, GPIO_PIN_SET);
     controller.is_enable = true;
@@ -70,8 +70,6 @@ void foc_motor::enable()
  */
 void foc_motor::disable()
 {
-    set_dq_voltage(0.0f, 0.0f, 0.0f);
-    set_phase_voltage();
     if(!en_gpio || !en_pin){return;}
     HAL_GPIO_WritePin(en_gpio, en_pin, GPIO_PIN_RESET);
     controller.is_enable = false;
@@ -110,6 +108,7 @@ void foc_motor::update()
  */
 void foc_motor::loop()
 {
+    if(current_sensor){current_sensor->update();}
     set_phase_voltage();
 }
 
