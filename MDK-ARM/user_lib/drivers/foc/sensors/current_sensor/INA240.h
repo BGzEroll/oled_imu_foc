@@ -18,7 +18,7 @@ class INA240 : public current_sensors
             float shunt_resistance = 0.0f, float gain = 1.0f);
 
     public:
-        void init();
+        void init() override;
         void get_offset() override;
         void update() override;
 

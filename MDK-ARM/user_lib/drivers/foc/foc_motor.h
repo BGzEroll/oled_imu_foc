@@ -19,6 +19,7 @@ class foc_motor
         void disable();
         void link_encoder_sensor(encoder_sensors *encoder_sensor);
         void link_current_sensor(current_sensors *current_sensor);
+        void link_vbus_sensor(vbus_sensors *vbus_sensor);
 
     public:
         void update();
@@ -39,6 +40,7 @@ class foc_motor
     public:
         encoder_sensors *encoder_sensor = nullptr;
         current_sensors *current_sensor = nullptr;
+        vbus_sensors *vbus_sensor = nullptr;
 
     private:
         TIM_HandleTypeDef *tim_handle;

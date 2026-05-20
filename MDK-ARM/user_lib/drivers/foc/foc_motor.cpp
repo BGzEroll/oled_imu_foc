@@ -30,6 +30,10 @@ foc_motor::foc_motor(TIM_HandleTypeDef *tim_handle, GPIO_TypeDef *en_gpio, uint1
  */
 void foc_motor::init()
 {
+    if(encoder_sensor){encoder_sensor->init();}
+    if(current_sensor){current_sensor->init();}
+    if(vbus_sensor){vbus_sensor->init();}
+
     if(voltage_power_supply < 0.0f){voltage_power_supply = 0.0f;}
     if(voltage_limit < 0.0f){voltage_limit = 0.0f;}
     if(voltage_sensor_align < 0.0f){voltage_sensor_align = 0.0f;}
@@ -93,6 +97,16 @@ void foc_motor::link_encoder_sensor(encoder_sensors *encoder_sensor)
 void foc_motor::link_current_sensor(current_sensors *current_sensor)
 {
     this->current_sensor = current_sensor;
+}
+
+/**
+ * @brief 链接母线电压传感器
+ * 
+ * @param vbus_sensor 母线电压传感器指针
+ */
+void foc_motor::link_vbus_sensor(vbus_sensors *vbus_sensor)
+{
+    this->vbus_sensor = vbus_sensor;
 }
 
 /**

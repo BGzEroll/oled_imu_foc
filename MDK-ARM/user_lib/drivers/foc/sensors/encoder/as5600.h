@@ -10,7 +10,7 @@ class as5600 : public encoder_sensors {
         as5600(uint8_t i2c_bus_id, uint8_t dev_addr);
 
     public:
-        void init();
+        void init() override;
 
     private:
         void update() override;

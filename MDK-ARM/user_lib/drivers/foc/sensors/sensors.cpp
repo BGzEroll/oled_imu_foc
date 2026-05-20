@@ -67,3 +67,13 @@ void current_sensors::get_voltage(float *v_a, float *v_b, float *v_c)
     *v_b = raw_voltage[1];
     *v_c = raw_voltage[2];
 }
+
+/**
+ * @brief 获取母线电压
+ * 
+ * @return 电压值，单位：伏特
+ */
+float vbus_sensors::get_vbus()
+{
+    return get_raw_vbus();
+}

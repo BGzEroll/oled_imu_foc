@@ -7,6 +7,7 @@
 class encoder_sensors
 {
     public:
+        virtual void init() = 0;
         virtual void update() = 0;
         virtual float get_angle();
         virtual float get_full_angle();
@@ -34,6 +35,7 @@ class encoder_sensors
 class current_sensors
 {
     public:
+        virtual void init() = 0;
         virtual void get_offset() = 0;
         virtual void update() = 0;
         virtual void get_current(float *i_a, float *i_b, float *i_c);
@@ -42,6 +44,16 @@ class current_sensors
     protected:
         virtual float *get_raw_current() = 0;
         virtual float *get_raw_voltage() = 0;
+};
+
+class vbus_sensors
+{
+    public:
+        virtual void init() = 0;
+        virtual float get_vbus();
+
+    protected:
+        virtual float get_raw_vbus() = 0;
 };
 
 #endif

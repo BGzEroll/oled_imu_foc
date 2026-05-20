@@ -18,7 +18,7 @@ extern ADC_HandleTypeDef hadc3;
 
 static uart_bus uart_0(0);
 
-static volatile uint16_t adc3_value = 0;
+// static volatile uint16_t adc3_value = 0;
 static float voltage[3] = {0.0f}, current[3] = {0.0f};
 
 static void test_proc(uint32_t tick)
@@ -53,7 +53,7 @@ static void test_proc(uint32_t tick)
 		oled.show_signed_num(2, 12, (int32_t)(voltage[1] * 100.0f), 4);
 
 		oled.show_string(3, 1, "power:");
-		oled.show_signed_num(3, 7, (int32_t)(((float)adc3_value / 4095.0f) * 3.3f * 11.0f * 1000.0f), 5);
+		oled.show_signed_num(3, 7, (int32_t)((motor_1.vbus_sensor->get_vbus() / 4095.0f) * 3.3f * 11.0f * 1000.0f), 5);
 
 		oled.flush();
 	}
@@ -74,7 +74,7 @@ static void test_proc(uint32_t tick)
 static void test_init(void)
 {
 	uart_0.init();
-	HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc3_value, 1);
+	// HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc3_value, 1);
 }
 
 #endif
