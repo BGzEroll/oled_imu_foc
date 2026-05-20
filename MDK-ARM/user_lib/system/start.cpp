@@ -13,7 +13,11 @@
 #include "drivers/bus/uart_bus.h"
 #include "third_party/segger_rtt/SEGGER_RTT.h"
 
+extern ADC_HandleTypeDef hadc3;
+
 static uart_bus uart_0(0);
+
+static volatile uint16_t adc3_value = 0;
 
 static void test_proc(uint32_t tick)
 {
@@ -30,8 +34,11 @@ static void test_proc(uint32_t tick)
 		oled.show_signed_num(3, 4, (int32_t)(mpu6050_dev.acc[2] * 1000), 4);
 		// oled.show_string(4, 1, "UNIT:mg");
 
-		oled.show_string(4, 1, "Encoder:");
-		oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
+		// oled.show_string(4, 1, "Encoder:");
+		// oled.show_signed_num(4, 9, (int32_t)(motor_1.sensor->get_angle() * 1000), 4);
+
+		oled.show_string(4, 1, "ADC3:");
+		oled.show_signed_num(4, 6, (int32_t)(((float)adc3_value / 4095.0f) * 3.3f * 11.0f * 1000), 5);
 
 		oled.flush();
 	}
@@ -42,16 +49,17 @@ static void test_proc(uint32_t tick)
 	// 	mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
 	// );
 
-	static uint32_t uart_print_cnt = 0;
-	if((uart_print_cnt += tick) >= 1000 && (uart_print_cnt = 0, 1))
-	{
-		uart_0.write_bytes((uint8_t *)"Hello, World!\n", 14);
-	}
+	// static uint32_t uart_print_cnt = 0;
+	// if((uart_print_cnt += tick) >= 1000 && (uart_print_cnt = 0, 1))
+	// {
+	// 	uart_0.write_bytes((uint8_t *)"Hello, World!\n", 14);
+	// }
 }
 
 static void test_init(void)
 {
 	uart_0.init();
+	HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc3_value, 1);
 }
 
 #endif
