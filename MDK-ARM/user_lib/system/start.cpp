@@ -8,7 +8,6 @@
 #define DEBUG_TEST
 #ifdef DEBUG_TEST
 
-#include <math.h>
 #include <string.h>
 #include <stdio.h>
 #include "drivers/bus/uart_bus.h"
@@ -42,6 +41,12 @@ static void test_proc(uint32_t tick)
 	// 	mpu6050_dev.gyro[0], mpu6050_dev.gyro[1], mpu6050_dev.gyro[2],
 	// 	mpu6050_dev.angle[0], mpu6050_dev.angle[1], mpu6050_dev.angle[2]
 	// );
+
+	static uint32_t uart_print_cnt = 0;
+	if((uart_print_cnt += tick) >= 1000 && (uart_print_cnt = 0, 1))
+	{
+		uart_0.write_bytes((uint8_t *)"Hello, World!\n", 14);
+	}
 }
 
 static void test_init(void)
@@ -87,7 +92,7 @@ extern "C" void start_init_all(void)
 
 	SEGGER_RTT_Init();
 	oled.init();
-	mpu6050_dev.init(1);
+	mpu6050_dev.init();
 	motor_init();
 	
 	event_list();
