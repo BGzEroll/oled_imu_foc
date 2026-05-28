@@ -11,7 +11,7 @@ class pid_controller
     public:
         float operator()(float error);
 
-    private:
+    public:
         float kp;
         float ki;
         float kd;

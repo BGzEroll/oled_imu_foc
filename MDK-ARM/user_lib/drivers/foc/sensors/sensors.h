@@ -40,6 +40,8 @@ class current_sensors
         virtual void update() = 0;
         virtual void get_current(float *i_a, float *i_b, float *i_c);
         virtual void get_voltage(float *v_a, float *v_b, float *v_c);
+        virtual float get_dc_current(float e_angle);
+        virtual void get_foc_current(float e_angle, float *i_q, float *i_d);
 
     protected:
         virtual float *get_raw_current() = 0;

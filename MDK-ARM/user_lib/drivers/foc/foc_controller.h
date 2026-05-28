@@ -54,6 +54,9 @@ class foc_controller
         float shaft_angle = 0.0f;
         float shaft_velocity = 0.0f;
         float voltage_bemf = 0.0f;
+        float current_sp = 0.0f;
+        float i_q = 0.0f;
+        float i_d = 0.0f;
 
     private:
         friend class foc_motor;

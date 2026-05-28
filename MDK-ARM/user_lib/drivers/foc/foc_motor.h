@@ -4,6 +4,8 @@
 #include "stm32f4xx_hal.h"
 #include "foc_controller.h"
 #include "sensors/sensors.h"
+#include "algorithm/pid_controller.h"
+#include "algorithm/lowpass_filter.h"
 
 class foc_motor
 {
@@ -36,6 +38,12 @@ class foc_motor
         float voltage_power_supply = 6.0f;
         float voltage_limit = 0.0f;
         float voltage_sensor_align = 0.0f;
+
+    public:
+        pid_controller pid_current_q{3.0f, 300.0f, 0.0f, 0.0f, 0.0f};
+        pid_controller pid_current_d{3.0f, 300.0f, 0.0f, 0.0f, 0.0f};
+        lowpass_filter lpf_current_q{0.005f};
+        lowpass_filter lpf_current_d{0.005f};
 
     public:
         encoder_sensors *encoder_sensor = nullptr;

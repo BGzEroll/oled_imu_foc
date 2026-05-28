@@ -21,7 +21,7 @@ lowpass_filter::lowpass_filter(float Tf)
 float lowpass_filter::operator()(float input)
 {
     uint32_t timestamp = foc_utils::get_us_tick();
-    float dt = (float)(timestamp - timestamp_prev) * 1e-6f;
+    float dt = (float)(timestamp - timestamp_prev) * 1.0e-6f;
 
     if(Tf <= 0.0f)
     {

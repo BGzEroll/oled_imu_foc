@@ -72,10 +72,10 @@ void foc_controller::torque(float torque)
         voltage_bemf = shaft_velocity / motor->KV / _RPM_TO_RADS;
     }
 
-    if(motor->R > 0.0f)
-    {
-        // current.q = ()
-    }
+    // if(!motor->current_sensor && motor->R > 0.0f)
+    // {
+    //     current.q = (U_q - voltage_bemf) / motor->R;
+    // }
 
     float U_q = 0.0f, U_d = 0.0f, e_angle = 0.0f;
 
@@ -89,7 +89,7 @@ void foc_controller::torque(float torque)
     }
     else
     {
-        // current_sp = torque;
+        current_sp = torque;
     }
 
     e_angle = foc_utils::normalize_angle((float)motor->sensor_direction * motor->PP * motor->encoder_sensor->get_angle() - motor->zero_electric_angle);
@@ -100,7 +100,11 @@ void foc_controller::torque(float torque)
             break;
 
         case torque_type::dc_current:
-            // TODO
+            if(!motor->current_sensor){return;}
+            i_q = motor->current_sensor->get_dc_current(e_angle);
+            i_q = motor->lpf_current_q(i_q);
+            U_q = motor->pid_current_q(current_sp - i_q);
+            U_d = 0.0f;
             break;
 
         case torque_type::foc_current:

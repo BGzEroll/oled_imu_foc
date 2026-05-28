@@ -13,17 +13,21 @@
 #include "drivers/bus/uart_bus.h"
 #include "third_party/segger_rtt/SEGGER_RTT.h"
 
-// extern ADC_HandleTypeDef hadc1;
-extern ADC_HandleTypeDef hadc3;
+struct test_data
+{
+	int32_t speed;
+	int32_t i_a;
+	int32_t i_b;
+	int32_t vbus;
+};
 
 static uart_bus uart_0(0);
 
-// static volatile uint16_t adc3_value = 0;
 static float voltage[3] = {0.0f}, current[3] = {0.0f};
 
 static void test_proc(uint32_t tick)
 {
-	motor_1.move(3.0f);
+	motor_1.move(0.1f);
 
 	motor_1.current_sensor->get_voltage(&voltage[0], &voltage[1], &voltage[2]);
 	motor_1.current_sensor->get_current(&current[0], &current[1], &current[2]);
@@ -40,7 +44,7 @@ static void test_proc(uint32_t tick)
 		// oled.show_string(4, 1, "UNIT:mg");
 
 		oled.show_string(4, 1, "encoder:");
-		oled.show_signed_num(4, 9, (int32_t)(motor_1.encoder_sensor->get_angle() * 1000.0f), 4);
+		oled.show_signed_num(4, 9, (int32_t)(motor_1.encoder_sensor->get_velocity() * 1000.0f), 4);
 
 		oled.show_string(1, 1, "I:");
 		oled.show_signed_num(1, 3, (int32_t)(current[0] * 100.0f), 4);
@@ -53,10 +57,20 @@ static void test_proc(uint32_t tick)
 		oled.show_signed_num(2, 12, (int32_t)(voltage[1] * 100.0f), 4);
 
 		oled.show_string(3, 1, "power:");
-		oled.show_signed_num(3, 7, (int32_t)((motor_1.vbus_sensor->get_vbus() / 4095.0f) * 3.3f * 11.0f * 1000.0f), 5);
+		oled.show_signed_num(3, 7, (int32_t)(motor_1.vbus_sensor->get_vbus() * 1000.0f), 5);
 
 		oled.flush();
 	}
+
+	test_data data = {0};
+	data.speed = (int32_t)(motor_1.encoder_sensor->get_velocity() * 1000000.0f);
+	data.i_a = (int32_t)(current[0] * 1000000.0f);
+	data.i_b = (int32_t)(current[1] * 1000000.0f);
+	data.vbus = (int32_t)(motor_1.vbus_sensor->get_vbus() * 1000000.0f);
+
+	SEGGER_RTT_printf(0, "%d,%d,%d,%d\n",
+		data.speed, data.i_a, data.i_b, data.vbus
+	);
 
 	// SEGGER_RTT_printf(0, "%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",
 	// 	mpu6050_dev.acc[0], mpu6050_dev.acc[1], mpu6050_dev.acc[2],
@@ -74,7 +88,6 @@ static void test_proc(uint32_t tick)
 static void test_init(void)
 {
 	uart_0.init();
-	// HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc3_value, 1);
 }
 
 #endif

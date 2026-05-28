@@ -25,5 +25,5 @@ void vbus_adc::init()
  */
 float vbus_adc::get_raw_vbus()
 {
-    return (float)vbus;
+    return (float)vbus / 4095.0f * 3.3f * 11.0f;
 }

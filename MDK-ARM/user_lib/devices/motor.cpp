@@ -21,11 +21,14 @@ void motor_init()
     motor_1.link_current_sensor(&current_sensor_1);
     motor_1.link_vbus_sensor(&vbus_sensor_1);
     motor_1.encoder_sensor->velocity_filter_Tf = 0.0063662f;        // 25Hz 低通滤波
+    // motor_1.encoder_sensor->velocity_filter_Tf = 0.1f;
 	motor_1.voltage_power_supply = 12.0f;
-	motor_1.voltage_limit = 1.0f;
+	motor_1.voltage_limit = 6.0f;
     motor_1.voltage_sensor_align = 3.0f;
 	motor_1.controller_type = foc_controller::type::velocity_openloop;
-    motor_1.torque_type = foc_controller::torque_type::voltage;
+    motor_1.torque_type = foc_controller::torque_type::dc_current;
+    motor_1.pid_current_q.kp = 0.1251f;
+    motor_1.pid_current_q.ki = 370.8825f;
 	motor_1.init();
 }
 
